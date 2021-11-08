@@ -1,0 +1,163 @@
+From d1ea1c38fc3b3adc9763350b3bd7a7b94c3e2b1a Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Mon, 8 Nov 2021 11:16:51 +0800
+Subject: [PATCH 2/2] integrate TPM into AOSP
+
+---
+ Android.bp   | 68 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/config.h | 68 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 136 insertions(+)
+ create mode 100644 Android.bp
+ create mode 100644 src/config.h
+
+diff --git a/Android.bp b/Android.bp
+new file mode 100644
+index 0000000..d8d0539
+--- /dev/null
++++ b/Android.bp
+@@ -0,0 +1,68 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++/*package {
++    default_applicable_licenses: ["external_tpm2-tss_license"],
++}*/
++
++// Added automatically by a large-scale-change
++// See: http://go/android-license-faq
++/*license {
++    name: "external_tpm2-tss_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}*/
++
++cc_defaults {
++    name: "tpm2-tss-engine-defaults",
++    //vendor: true,
++    //host_supported: true,
++    compile_multilib: "first",
++    cflags: [
++        //"-Wno-typedef-redefinition", // to silence error "redefinition of typedef"
++        "-DHAVE_CONFIG_H",
++    ],
++    export_include_dirs: [
++        "include",
++    ],
++}
++
++cc_library {
++    name: "libtpm2tss",
++    defaults: [ "tpm2-tss-engine-defaults" ],
++    srcs: [
++        "src/*.c",
++    ],
++    local_include_dirs: [
++        "src",
++        "include",
++    ],
++    shared_libs: [
++        "liblog",
++        "openssl-libcrypto",
++        "libyaml",
++        "tpm2-tss2-mu",
++        "tpm2-tss2-tcti",
++        "tpm2-tss2-sys",
++        "tpm2-tss2-esys",
++        "tpm2-tss2-util",
++        "tpm2-tss2-rc",
++        "tpm2-tss2-fapi",
++    ],
++}
+diff --git a/src/config.h b/src/config.h
+new file mode 100644
+index 0000000..6484977
+--- /dev/null
++++ b/src/config.h
+@@ -0,0 +1,68 @@
++/* src/config.h.  Generated from config.h.in by configure.  */
++/* src/config.h.in.  Generated from configure.ac by autoheader.  */
++
++/* 'Enable getting TCTI from env variable' */
++#define ENABLE_TCTIENVVAR 1
++
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#define HAVE_DLFCN_H 1
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the <memory.h> header file. */
++#define HAVE_MEMORY_H 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#define HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#define HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#define HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#define HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#define HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Define to the sub-directory where libtool stores uninstalled libraries. */
++#define LT_OBJDIR ".libs/"
++
++/* Define if debugging is disabled */
++//#define NDEBUG /**/
++
++/* Name of package */
++#define PACKAGE "tpm2-tss-engine"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT "https://github.com/tpm2-software/tpm2-tss-engine/issues"
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "tpm2-tss-engine"
++
++/* Define to the full name and version of this package. */
++#define PACKAGE_STRING "tpm2-tss-engine 1.1.0"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "tpm2-tss-engine"
++
++/* Define to the home page for this package. */
++#define PACKAGE_URL "https://github.com/tpm2-software/tpm2-tss-engine"
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "1.1.0"
++
++/* Define to 1 if you have the ANSI C header files. */
++#define STDC_HEADERS 1
++
++/* Version number of package */
++#define VERSION "1.1.0"
+-- 
+2.25.1
+

@@ -1,0 +1,414 @@
+From 2fe1ade9a852e48471c5d9f102e6d938e13c9193 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Mon, 8 Nov 2021 11:22:07 +0800
+Subject: [PATCH] integrate TPM into AOSP
+
+---
+ Android.bp                 | 264 +++++++++++++++++++++++++++++++++++++
+ lib/config.h               |  85 ++++++++++++
+ tools/fapi/tss2_template.c |   5 +-
+ tools/tpm2_tool.c          |   2 +-
+ 4 files changed, 353 insertions(+), 3 deletions(-)
+ create mode 100644 Android.bp
+ create mode 100644 lib/config.h
+
+diff --git a/Android.bp b/Android.bp
+new file mode 100644
+index 00000000..cd6eed66
+--- /dev/null
++++ b/Android.bp
+@@ -0,0 +1,264 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++/*package {
++    default_applicable_licenses: ["external_tpm2-tss_license"],
++}*/
++
++// Added automatically by a large-scale-change
++// See: http://go/android-license-faq
++/*license {
++    name: "external_tpm2-tss_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}*/
++
++cc_defaults {
++    name: "tpm2-tools-defaults",
++    //vendor: true,
++    //host_supported: true,
++    compile_multilib: "first",
++    cflags: [
++        //"-Wno-implicit-function-declaration",
++        //"-DLIB_TPM2_OPENSSL_OPENSSL_PRE11",
++        //"-DESYS_3_0",
++        //"-DFAPI_3_0",
++        //"-DVERSION=\"5.1.1\"", // Update this according to tpm2-tools tag
++        "-DHAVE_CONFIG_H",
++    ],
++}
++
++cc_binary {
++    name: "tpm2",
++    srcs: [
++        "tools/*.c",
++        "lib/*.c",
++    ],
++    local_include_dirs: [ // local header files
++        "tools",
++        "lib",
++    ],
++    /*include_dirs: [ // external header files
++        "external/tpm2-tss/include",
++        "external/curl/include",
++    ],*/
++    shared_libs: [
++        //"libcrypto", // OpenSSL (BoringSSL)
++        "openssl-libcrypto",
++        "liblog",
++        "libcurl",
++        "libext2_uuid",
++        "tpm2-tss2-mu",
++        "tpm2-tss2-tcti",
++        "tpm2-tss2-sys",
++        "tpm2-tss2-esys",
++        "tpm2-tss2-util",
++        "tpm2-tss2-rc",
++    ],
++    symlinks: [
++        "tpm2_activatecredential",
++        "tpm2_certify",
++        "tpm2_changeauth",
++        "tpm2_changeeps",
++        "tpm2_changepps",
++        "tpm2_clear",
++        "tpm2_clearcontrol",
++        "tpm2_clockrateadjust",
++        "tpm2_create",
++        "tpm2_createak",
++        "tpm2_createek",
++        "tpm2_createpolicy",
++        "tpm2_setprimarypolicy",
++        "tpm2_createprimary",
++        "tpm2_dictionarylockout",
++        "tpm2_duplicate",
++        "tpm2_getcap",
++        "tpm2_gettestresult",
++        "tpm2_encryptdecrypt",
++        "tpm2_evictcontrol",
++        "tpm2_flushcontext",
++        "tpm2_getekcertificate",
++        "tpm2_getrandom",
++        "tpm2_gettime",
++        "tpm2_hash",
++        "tpm2_hierarchycontrol",
++        "tpm2_hmac",
++        "tpm2_import",
++        "tpm2_incrementalselftest",
++        "tpm2_load",
++        "tpm2_loadexternal",
++        "tpm2_makecredential",
++        "tpm2_nvdefine",
++        "tpm2_nvextend",
++        "tpm2_nvincrement",
++        "tpm2_nvreadpublic",
++        "tpm2_nvread",
++        "tpm2_nvreadlock",
++        "tpm2_nvundefine",
++        "tpm2_nvwrite",
++        "tpm2_nvwritelock",
++        "tpm2_nvsetbits",
++        "tpm2_pcrallocate",
++        "tpm2_pcrevent",
++        "tpm2_pcrextend",
++        "tpm2_pcrread",
++        "tpm2_pcrreset",
++        "tpm2_policypcr",
++        "tpm2_policyauthorize",
++        "tpm2_policyauthorizenv",
++        "tpm2_policynv",
++        "tpm2_policycountertimer",
++        "tpm2_policyor",
++        "tpm2_policynamehash",
++        "tpm2_policytemplate",
++        "tpm2_policycphash",
++        "tpm2_policypassword",
++        "tpm2_policysigned",
++        "tpm2_policyticket",
++        "tpm2_policyauthvalue",
++        "tpm2_policysecret",
++        "tpm2_policyrestart",
++        "tpm2_policycommandcode",
++        "tpm2_policynvwritten",
++        "tpm2_policyduplicationselect",
++        "tpm2_policylocality",
++        "tpm2_quote",
++        "tpm2_readclock",
++        "tpm2_readpublic",
++        "tpm2_rsadecrypt",
++        "tpm2_rsaencrypt",
++        "tpm2_send",
++        "tpm2_selftest",
++        "tpm2_setclock",
++        "tpm2_shutdown",
++        "tpm2_sign",
++        "tpm2_certifycreation",
++        "tpm2_nvcertify",
++        "tpm2_startauthsession",
++        "tpm2_startup",
++        "tpm2_stirrandom",
++        "tpm2_testparms",
++        "tpm2_unseal",
++        "tpm2_verifysignature",
++        "tpm2_setcommandauditstatus",
++        "tpm2_getcommandauditdigest",
++        "tpm2_getsessionauditdigest",
++        "tpm2_geteccparameters",
++        "tpm2_ecephemeral",
++        "tpm2_commit",
++        "tpm2_ecdhkeygen",
++        "tpm2_ecdhzgen",
++        "tpm2_zgen2phase",
++        "tpm2_sessionconfig",
++        "tpm2_getpolicydigest",
++    ],
++    defaults: [ "tpm2-tools-defaults" ],
++}
++
++cc_binary {
++    name: "tss2",
++    srcs: [
++        "tools/fapi/*.c",
++        "lib/files.c",
++        "lib/log.c",
++        "lib/object.c",
++        "lib/pcr.c",
++        "lib/tool_rc.c",
++        "lib/tpm2_alg_util.c",
++        "lib/tpm2_attr_util.c",
++        "lib/tpm2_auth_util.c",
++        "lib/tpm2.c",
++        "lib/tpm2_capability.c",
++        "lib/tpm2_cc_util.c",
++        "lib/tpm2_convert.c",
++        "lib/tpm2_ctx_mgmt.c",
++        "lib/tpm2_errata.c",
++        "lib/tpm2_eventlog.c",
++        "lib/tpm2_eventlog_yaml.c",
++        "lib/tpm2_hash.c",
++        "lib/tpm2_hierarchy.c",
++        "lib/tpm2_identity_util.c",
++        "lib/tpm2_kdfa.c",
++        "lib/tpm2_kdfe.c",
++        "lib/tpm2_openssl.c",
++        "lib/tpm2_options.c",
++        "lib/tpm2_policy.c",
++        "lib/tpm2_session.c",
++        //"lib/tpm2_tool_output.c", // this is for tpm2 not tss2
++        "lib/tpm2_util.c",
++    ],
++    local_include_dirs: [ // local header files
++        "tools/fapi",
++        "tools",
++        "lib",
++    ],
++    shared_libs: [
++        //"libcrypto", // OpenSSL (BoringSSL)
++        "liblog",
++        "openssl-libcrypto",
++        "libcurl",
++        "libext2_uuid",
++        "tpm2-tss2-mu",
++        "tpm2-tss2-tcti",
++        "tpm2-tss2-sys",
++        "tpm2-tss2-esys",
++        "tpm2-tss2-util",
++        "tpm2-tss2-rc",
++        "tpm2-tss2-fapi",
++    ],
++    symlinks: [
++        "tss2_decrypt",
++        "tss2_encrypt",
++        "tss2_list",
++        "tss2_changeauth",
++        "tss2_delete",
++        "tss2_import",
++        "tss2_getinfo",
++        "tss2_createkey",
++        "tss2_createseal",
++        "tss2_exportkey",
++        "tss2_getcertificate",
++        "tss2_getplatformcertificates",
++        "tss2_gettpmblobs",
++        "tss2_getappdata",
++        "tss2_setappdata",
++        "tss2_setcertificate",
++        "tss2_sign",
++        "tss2_verifysignature",
++        "tss2_verifyquote",
++        "tss2_createnv",
++        "tss2_nvextend",
++        "tss2_nvincrement",
++        "tss2_nvread",
++        "tss2_nvsetbits",
++        "tss2_nvwrite",
++        "tss2_getdescription",
++        "tss2_setdescription",
++        "tss2_pcrextend",
++        "tss2_quote",
++        "tss2_pcrread",
++        "tss2_authorizepolicy",
++        "tss2_exportpolicy",
++        "tss2_provision",
++        "tss2_getrandom",
++        "tss2_unseal",
++        "tss2_writeauthorizenv",
++    ],
++    defaults: [ "tpm2-tools-defaults" ],
++}
+diff --git a/lib/config.h b/lib/config.h
+new file mode 100644
+index 00000000..440fa7a7
+--- /dev/null
++++ b/lib/config.h
+@@ -0,0 +1,85 @@
++#ifndef CONFIG_H
++#define CONFIG_H
++/* lib/config.h.  Generated from config.h.in by configure.  */
++/* lib/config.h.in.  Generated from configure.ac by autoheader.  */
++
++/* Some versions of libc cause a sigsegv on exit with dlclose(), this disables
++   the dlclose() and works around that bug */
++/* #undef DISABLE_DLCLOSE */
++
++/* Esys2.3 */
++/* #undef ESYS_2_3 */
++
++/* Esys3.0 */
++#define ESYS_3_0 1
++
++/* fapi3.0.0 */
++#define FAPI_3_0 1
++
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#define HAVE_DLFCN_H 1
++
++/* Define to 1 if you have the <efivar/efivar.h> header file. */
++/* #undef HAVE_EFIVAR_EFIVAR_H */
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the <memory.h> header file. */
++#define HAVE_MEMORY_H 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#define HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#define HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#define HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#define HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#define HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Define to the sub-directory where libtool stores uninstalled libraries. */
++#define LT_OBJDIR ".libs/"
++
++/* Define if debugging is disabled */
++/* #define NDEBUG */ // directly inserted in command line by aosp build
++
++/* Name of package */
++#define PACKAGE "tpm2-tools"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT ""
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "tpm2-tools"
++
++/* Define to the full name and version of this package. */
++#define PACKAGE_STRING "tpm2-tools 5.1"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "tpm2-tools"
++
++/* Define to the home page for this package. */
++#define PACKAGE_URL ""
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "5.1"
++
++/* Define to 1 if you have the ANSI C header files. */
++#define STDC_HEADERS 1
++
++/* Version number of package */
++#define VERSION "5.1"
++
++#endif
+diff --git a/tools/fapi/tss2_template.c b/tools/fapi/tss2_template.c
+index ecec0f04..0e083ca2 100644
+--- a/tools/fapi/tss2_template.c
++++ b/tools/fapi/tss2_template.c
+@@ -437,7 +437,7 @@ void tss2_tool_register(const tss2_tool *tool) {
+ 
+ static const char *tss2_tool_name(const char *arg) {
+ 
+-    const char *name = rindex(arg, '/');
++    const char *name = strrchr(arg, '/'); // https://nxmnpg.lemoda.net/3/rindex
+     if (name) {
+         name++; // skip the '/'
+     } else {
+@@ -632,7 +632,8 @@ int open_read_and_close (const char *path, void **input, size_t *size) {
+             fprintf (stderr, "malloc(2) failed: %m\n");
+             return 1;
+         }
+-        while ((data_read = read (STDIN_FILENO, *input + data_consumed, 1024))){
++        // Fix: error: arithmetic on a pointer to void is a GNU extension [-Werror,-Wpointer-arith]
++        while ((data_read = read (STDIN_FILENO, (uint8_t *)*input + data_consumed, 1024))){
+             data_consumed += data_read;
+             if (data_read < 1024) /* EOF reached */
+                 break;
+diff --git a/tools/tpm2_tool.c b/tools/tpm2_tool.c
+index f4865266..b5de2f75 100644
+--- a/tools/tpm2_tool.c
++++ b/tools/tpm2_tool.c
+@@ -77,7 +77,7 @@ void tpm2_tool_register(const tpm2_tool *tool) {
+ 
+ static const char *tpm2_tool_name(const char *arg) {
+ 
+-    const char *name = rindex(arg, '/');
++    const char *name = strrchr(arg, '/');
+     if (name) {
+         name++; // skip the '/'
+     } else {
+-- 
+2.25.1
+

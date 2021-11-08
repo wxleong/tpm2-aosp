@@ -1,0 +1,130 @@
+From f2a8d91b5468cb7dc035c1de3bbec797da6b5b99 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Tue, 9 Nov 2021 11:49:12 +0800
+Subject: [PATCH] integrate TPM into AOSP
+
+---
+ Android.bp                     | 19 ++++++++++++-------
+ TPMCmd/Platform/src/NVMem.c    |  2 +-
+ TPMCmd/Simulator/src/TPMCmds.c |  3 +++
+ ms-tpm-20-ref.rc               |  4 ++++
+ 4 files changed, 20 insertions(+), 8 deletions(-)
+ create mode 100644 ms-tpm-20-ref.rc
+
+diff --git a/Android.bp b/Android.bp
+index 6f516b4..3211c59 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -15,9 +15,9 @@
+ // *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE
+ //     CONSULT THE OWNERS AND opensource-licensing@google.com BEFORE
+ //     DEPENDING ON IT IN YOUR PROJECT. ***
+-package {
++/*package {
+     default_applicable_licenses: ["external_ms-tpm-20-ref_license"],
+-}
++}*/
+ 
+ // Added automatically by a large-scale-change that took the approach of
+ // 'apply every license found to every target'. While this makes sure we respect
+@@ -33,7 +33,7 @@ package {
+ // to attach the license to, and including a comment whether the files may be
+ // used in the current project.
+ // See: http://go/android-license-faq
+-license {
++/*license {
+     name: "external_ms-tpm-20-ref_license",
+     visibility: [":__subpackages__"],
+     license_kinds: [
+@@ -45,10 +45,13 @@ license {
+     license_text: [
+         "LICENSE",
+     ],
+-}
++}*/
+ 
+ cc_defaults {
+     name: "ms-tpm-20-ref-defaults",
++    vendor: true,
++    //host_supported: true,
++    compile_multilib: "first",
+     local_include_dirs: [
+         "TPMCmd/Platform/include",
+         "TPMCmd/Platform/include/prototypes",
+@@ -58,10 +61,9 @@ cc_defaults {
+         "TPMCmd/tpm/include/Ossl",
+         "TPMCmd/tpm/include/prototypes",
+     ],
+-    device_supported: false,
+-    host_supported: true,
+     shared_libs: [
+         "libcrypto",
++        "liblog",
+     ],
+     cflags: [
+         "-DMAX_SYM_DATA=256",
+@@ -102,7 +104,7 @@ cc_library {
+     defaults: [ "ms-tpm-20-ref-defaults" ],
+ }
+ 
+-cc_binary_host {
++cc_binary {
+     name: "ms-tpm-20-ref",
+     srcs: [
+         "TPMCmd/Simulator/src/TPMCmds.c",
+@@ -110,5 +112,8 @@ cc_binary_host {
+     shared_libs: [
+         "ms-tpm-20-ref-lib",
+     ],
++    init_rc: [
++        "ms-tpm-20-ref.rc",
++    ],
+     defaults: [ "ms-tpm-20-ref-defaults" ],
+ }
+diff --git a/TPMCmd/Platform/src/NVMem.c b/TPMCmd/Platform/src/NVMem.c
+index 72e4ccc..a7de148 100644
+--- a/TPMCmd/Platform/src/NVMem.c
++++ b/TPMCmd/Platform/src/NVMem.c
+@@ -71,7 +71,7 @@ NvFileOpen(
+ #   undef TO_STRING
+ #   undef TO_STRING_IMPL
+ #else
+-    const char* s_NvFilePath = "NVChip";
++    const char* s_NvFilePath = "/data/NVChip";
+ #endif
+ 
+     // Try to open an exist NVChip file for read/write
+diff --git a/TPMCmd/Simulator/src/TPMCmds.c b/TPMCmd/Simulator/src/TPMCmds.c
+index 0aca528..f3ff00d 100644
+--- a/TPMCmd/Simulator/src/TPMCmds.c
++++ b/TPMCmd/Simulator/src/TPMCmds.c
+@@ -44,6 +44,7 @@
+ #include <stdbool.h>
+ #include <ctype.h>
+ #include <string.h>
++#include <log/log.h>
+ 
+ #ifdef _MSC_VER
+ #   pragma warning(push, 3)
+@@ -243,6 +244,8 @@ main(
+     bool    manufacture = false;
+     int     PortNum = DEFAULT_TPM_PORT;
+ 
++    ALOGI("Starting TPM simulator.");
++
+     // Parse command line options
+ 
+     if (CmdLineParser_Init(argc, argv, 2))
+diff --git a/ms-tpm-20-ref.rc b/ms-tpm-20-ref.rc
+new file mode 100644
+index 0000000..716ae5f
+--- /dev/null
++++ b/ms-tpm-20-ref.rc
+@@ -0,0 +1,4 @@
++service ms_tpm_20_ref_service /vendor/bin/ms-tpm-20-ref
++    class core
++    user root
++    group root
+-- 
+2.25.1
+

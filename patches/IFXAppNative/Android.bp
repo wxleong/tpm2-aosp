@@ -1,0 +1,9 @@
+android_app {
+    name: "ifx-demoapp-native",
+    srcs: ["**/*.java"],
+    //sdk_version: "current",
+    platform_apis: true,
+    jni_libs: [
+        "libjni-ifx-demoapp-native",
+    ],
+}

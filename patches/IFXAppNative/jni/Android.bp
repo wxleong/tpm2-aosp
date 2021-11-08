@@ -1,0 +1,32 @@
+cc_library {
+    name: "libjni-ifx-demoapp-native",
+
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+
+    //sdk_version: "current",
+    
+    compile_multilib: "first",
+
+    shared_libs: [
+        "liblog",
+        "openssl-libcrypto",
+        "openssl-libssl",
+        "libtpm2tss",
+        "tpm2-tss2-mu",
+        "tpm2-tss2-tcti",
+        "tpm2-tss2-sys",
+        "tpm2-tss2-esys",
+        "tpm2-tss2-util",
+        "tpm2-tss2-rc",
+        "tpm2-tss2-fapi",
+    ],
+    
+    srcs: [
+        "lib.c",
+    ],
+
+}

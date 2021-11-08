@@ -1,0 +1,51 @@
+From 26e6447806b99d26de209935d4814b1275cf740d Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Tue, 9 Nov 2021 10:42:44 +0800
+Subject: [PATCH] integrate TPM into AOSP
+
+---
+ target/product/base_system.mk     |  4 ++++
+ target/product/mainline_system.mk | 12 ++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/target/product/base_system.mk b/target/product/base_system.mk
+index 4569bceff9..ca1cbc4855 100644
+--- a/target/product/base_system.mk
++++ b/target/product/base_system.mk
+@@ -274,6 +274,10 @@ PRODUCT_PACKAGES += \
+     wifi.rc \
+     wm \
+ 
++# TPM
++PRODUCT_PACKAGES += \
++    ifx-demoapp-native \
++
+ # VINTF data for system image
+ PRODUCT_PACKAGES += \
+     system_manifest.xml \
+diff --git a/target/product/mainline_system.mk b/target/product/mainline_system.mk
+index a787707a04..2fe12dd1cd 100644
+--- a/target/product/mainline_system.mk
++++ b/target/product/mainline_system.mk
+@@ -89,6 +89,18 @@ PRODUCT_PACKAGES += \
+     libnl \
+     libprotobuf-cpp-full \
+ 
++# TPM
++PRODUCT_PACKAGES += \
++    libjson-c \
++    tpm2-tss2-fapi \
++    tpm2-tss2-rc \
++    tpm2 \
++    libyaml \
++    tss2 \
++    openssl-libcrypto \
++    openssl-libssl \
++    libtpm2tss \
++
+ # These libraries are empty and have been combined into libhidlbase, but are still depended
+ # on by things off /system.
+ # TODO(b/135686713): remove these
+-- 
+2.25.1
+
