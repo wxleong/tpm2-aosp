@@ -1,13 +1,13 @@
-From 34ecbd5df25913c09bec753844f15d040b7a0b54 Mon Sep 17 00:00:00 2001
+From 458d45d2da271242321237bd134e82e3366485a4 Mon Sep 17 00:00:00 2001
 From: "wenxin.leong" <wenxin.leong@infineon.com>
 Date: Tue, 9 Nov 2021 10:47:29 +0800
 Subject: [PATCH] integrate TPM into AOSP
 
 ---
- sepolicy/common/file_contexts |  2 ++
- sepolicy/x86/ms-tpm-20-ref.te | 20 ++++++++++++++++++++
- vendor.mk                     |  4 ++++
- 3 files changed, 26 insertions(+)
+ sepolicy/common/file_contexts | 2 ++
+ sepolicy/x86/ms-tpm-20-ref.te | 5 +++++
+ vendor.mk                     | 4 ++++
+ 3 files changed, 11 insertions(+)
  create mode 100644 sepolicy/x86/ms-tpm-20-ref.te
 
 diff --git a/sepolicy/common/file_contexts b/sepolicy/common/file_contexts
@@ -22,26 +22,11 @@ index f009b7cd..06b87a54 100644
 +/vendor/bin/ms-tpm-20-ref   u:object_r:tpm_ms_emulator_exec:s0
 diff --git a/sepolicy/x86/ms-tpm-20-ref.te b/sepolicy/x86/ms-tpm-20-ref.te
 new file mode 100644
-index 00000000..91bcc5c1
+index 00000000..8a71fb74
 --- /dev/null
 +++ b/sepolicy/x86/ms-tpm-20-ref.te
-@@ -0,0 +1,20 @@
+@@ -0,0 +1,5 @@
 +type tpm_ms_emulator, domain;
-+
-+#permissive tpm_ms_emulator;
-+
-+#============= netd ==============
-+allow netd tpm_ms_emulator:fd use;
-+allow netd tpm_ms_emulator:tcp_socket { getopt read setopt write };
-+
-+#============= tpm_ms_emulator ==============
-+allow tpm_ms_emulator fwmarkd_socket:sock_file write;
-+allow tpm_ms_emulator netd:unix_stream_socket connectto;
-+allow tpm_ms_emulator node:tcp_socket node_bind;
-+allow tpm_ms_emulator port:tcp_socket name_bind;
-+allow tpm_ms_emulator self:tcp_socket { accept bind create listen read write };
-+allow tpm_ms_emulator device:dir { add_name write };
-+allow tpm_ms_emulator device:file { create getattr open read write };
 +
 +type tpm_ms_emulator_exec, exec_type, vendor_file_type, file_type;
 +

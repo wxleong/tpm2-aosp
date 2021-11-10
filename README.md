@@ -1,12 +1,14 @@
 # Introduction
 
-This repository contains the guide to integrate Trusted Platform Module 2.0 (TPM) into Android Open Source Project (AOSP).
+Trusted Platform Module 2.0 (TPM) integrate guide for Android Open Source Project (AOSP).
+
+Software flowchart: Android application (IFXAppNative) -> OpenSSL -> Engine (tpm2-tss-engine) -> TSS (tpm2-tss) -> TPM2.0 simulator (ms-tpm-20-ref)
 
 # Table of Contents
 
 - **[1. Prerequisites](#1-prerequisites)**
 - **[2. Setup AOSP](#2-setup-aosp)**
-  - **[2.1 Prepare Environment](#21-prepare-environment)**
+  - **[2.1 Preparing the Environment](#21-preparing-the-environment)**
   - **[2.2 Download AOSP](#22-download-aosp)**
   - **[2.3 Build AOSP](#23-build-aosp)**
   - **[2.4 Run AOSP Emulator](#24-run-aosp-emulator)**
@@ -23,7 +25,6 @@ This repository contains the guide to integrate Trusted Platform Module 2.0 (TPM
 - **[4. Access TPM using JNI Framework](#4-access-tpm-using-jni-framework)**
 - **[5. References](#5-references)**
 - **[License](#license)**
-<!-- - **[5. Access TPM from KeyStore](#5-access-tpm-from-keystore)** -->
 
 # 1. Prerequisites
 
@@ -32,16 +33,16 @@ This repository contains the guide to integrate Trusted Platform Module 2.0 (TPM
 
 # 2. Setup AOSP
 
-## 2.1 Prepare Environment
+## 2.1 Preparing the Environment
 
 This section is a summary of \[[2]\], \[[3]\], and \[[4]\].
 
-Installing required packages:
+Install required packages:
 ```
 $ sudo apt-get install git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig
 ```
 
-Installing additional packages:
+Install additional packages:
 ```
 $ sudo apt-get install git
 ```
@@ -85,7 +86,7 @@ $ repo sync -c -j$(nproc)
 
 ## 2.3 Build AOSP
 
-Build AOSP emulator, will grow to approximately 250GB:
+Build AOSP emulator, grow to approximately 250GB:
 ```
 $ cd ~/aosp
 $ source build/envsetup.sh
@@ -93,7 +94,7 @@ $ lunch aosp_x86_64-eng
 $ m -j$(nproc)
 ```
 
-For subsequence build, if you wish to reset the emulator filesystem, delete the following files before rebuilding:
+For subsequent build, if you wish to reset the emulator filesystem, delete the following files before rebuilding:
 ```
 $ rm ~/aosp/out/target/product/generic_x86_64/system-qemu.img
 $ rm ~/aosp/out/target/product/generic_x86_64/userdata-qemu.img
