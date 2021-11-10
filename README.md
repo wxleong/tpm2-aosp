@@ -22,6 +22,7 @@ This repository contains the guide to integrate Trusted Platform Module 2.0 (TPM
   - **[3.8 AOSP Build Config](#38-aosp-build-config)**
 - **[4. Access TPM using JNI Framework](#4-access-tpm-using-jni-framework)**
 - **[5. References](#5-references)**
+- **[License](#license)**
 <!-- - **[5. Access TPM from KeyStore](#5-access-tpm-from-keystore)** -->
 
 # 1. Prerequisites
@@ -230,7 +231,7 @@ tcp        0      0 0.0.0.0:2321            0.0.0.0:*               LISTEN      
 tcp        0      0 0.0.0.0:2322            0.0.0.0:*               LISTEN      357/ms-tpm-20-ref
 ```
 
-Execute the command `tpm2_startup -c` in adb shell before launching the IFXAppNative application. Showing below is the application log:
+Execute the command `tpm2_startup -T mssim:host=localhost,port=2321 -c` in adb shell before launching the IFXAppNative application. Showing below is the application log:
 
 ```
 11-09 15:35:45.390  1845  1845 D IFXAPP  : onCreate done...
@@ -293,3 +294,7 @@ Execute the command `tpm2_startup -c` in adb shell before launching the IFXAppNa
 [5]: https://source.android.com/setup/build/downloading
 [6]: https://developer.android.com/studio/run/emulator-commandline
 [7]: https://github.com/openssl/openssl/blob/master/NOTES-ANDROID.md
+
+# License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
