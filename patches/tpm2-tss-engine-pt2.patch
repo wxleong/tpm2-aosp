@@ -1,0 +1,25 @@
+From f0a31a5e097d0ce2ae3e116411ff1dc3e2891513 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Tue, 16 Nov 2021 17:07:10 +0800
+Subject: [PATCH] integrate TPM into AOSP (part 2)
+
+---
+ Android.bp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Android.bp b/Android.bp
+index d8d0539..b1853fb 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -31,7 +31,7 @@
+ 
+ cc_defaults {
+     name: "tpm2-tss-engine-defaults",
+-    //vendor: true,
++    vendor: true,
+     //host_supported: true,
+     compile_multilib: "first",
+     cflags: [
+-- 
+2.25.1
+

@@ -1,0 +1,50 @@
+From d13f60c30759caa93480adee13039460ab48a379 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Mon, 15 Nov 2021 16:24:26 +0800
+Subject: [PATCH] integrate TPM into AOSP (part 2)
+
+---
+ target/product/base_system.mk     |  1 +
+ target/product/mainline_system.mk | 14 --------------
+ 2 files changed, 1 insertion(+), 14 deletions(-)
+
+diff --git a/target/product/base_system.mk b/target/product/base_system.mk
+index ca1cbc4855..226b90daa6 100644
+--- a/target/product/base_system.mk
++++ b/target/product/base_system.mk
+@@ -277,6 +277,7 @@ PRODUCT_PACKAGES += \
+ # TPM
+ PRODUCT_PACKAGES += \
+     ifx-demoapp-native \
++    ifx-demoapp-keymaster \
+ 
+ # VINTF data for system image
+ PRODUCT_PACKAGES += \
+diff --git a/target/product/mainline_system.mk b/target/product/mainline_system.mk
+index cda2e4b9f8..a787707a04 100644
+--- a/target/product/mainline_system.mk
++++ b/target/product/mainline_system.mk
+@@ -89,20 +89,6 @@ PRODUCT_PACKAGES += \
+     libnl \
+     libprotobuf-cpp-full \
+ 
+-# TPM
+-PRODUCT_PACKAGES += \
+-    libjson-c \
+-    tpm2-tss2-fapi \
+-    tpm2-tss2-rc \
+-    libtss2-tcti-mssim \
+-    libtss2-tcti-device \
+-    tpm2 \
+-    libyaml \
+-    tss2 \
+-    openssl-libcrypto \
+-    openssl-libssl \
+-    libtpm2tss \
+-
+ # These libraries are empty and have been combined into libhidlbase, but are still depended
+ # on by things off /system.
+ # TODO(b/135686713): remove these
+-- 
+2.25.1
+

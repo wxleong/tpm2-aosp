@@ -1,0 +1,25 @@
+From a7b1d48cb9072330e13763de5d1f10c72c964c2a Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Mon, 15 Nov 2021 16:17:42 +0800
+Subject: [PATCH] integrate TPM into AOSP
+
+Change-Id: Iea37975d5a90827d611b3e0fe7930a401c0e1e31
+---
+ .../3.0/default/android.hardware.keymaster@3.0-service.rc     | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/keymaster/3.0/default/android.hardware.keymaster@3.0-service.rc b/keymaster/3.0/default/android.hardware.keymaster@3.0-service.rc
+index dffaca51e..1ebdeb14a 100644
+--- a/keymaster/3.0/default/android.hardware.keymaster@3.0-service.rc
++++ b/keymaster/3.0/default/android.hardware.keymaster@3.0-service.rc
+@@ -1,5 +1,5 @@
+ service vendor.keymaster-3-0 /vendor/bin/hw/android.hardware.keymaster@3.0-service
+     interface android.hardware.keymaster@3.0::IKeymasterDevice default
+     class early_hal
+-    user nobody
+-    group drmrpc
++    user root
++    group root
+-- 
+2.25.1
+
