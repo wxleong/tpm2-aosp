@@ -33,6 +33,7 @@
 
 #include "lib.h"
 
+#define TPM_ENGINE_PATH "/system/lib64/libtpm2tss.so"
 #define RSA_KEY_PATH "/storage/emulated/0/Download/rsa-key"
 #define EC_KEY_PATH "/storage/emulated/0/Download/ec-key"
 
@@ -605,7 +606,7 @@ void Java_com_ifx_nave_JavaNative_nativeTestTPMEngine(JNIEnv* env __unused, jobj
         goto err1;
     }
 
-    if (!ENGINE_ctrl_cmd_string(pEngine, "SO_PATH", "/system/lib64/libtpm2tss.so", 0)
+    if (!ENGINE_ctrl_cmd_string(pEngine, "SO_PATH", TPM_ENGINE_PATH, 0)
         || !ENGINE_ctrl_cmd_string(pEngine, "ID", "tpm2tss", 0)
         || !ENGINE_ctrl_cmd_string(pEngine, "LOAD", NULL, 0)) {
         ALOGE("Unable to load TPM OpenSSL engine ENGINE_ctrl_cmd_string.");

@@ -1,0 +1,42 @@
+From f6728f8e4e38081a6099faa85998252fd4e02b7e Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Mon, 15 Nov 2021 17:03:00 +0800
+Subject: [PATCH] integrate TPM into AOSP
+
+Change-Id: Idb1235bdc65a2378b3cb4d86e85562cb17a8ad5d
+---
+ .../contexts/keymaster0_passthrough_context.h  | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/include/keymaster/contexts/keymaster0_passthrough_context.h b/include/keymaster/contexts/keymaster0_passthrough_context.h
+index cad9df6..0c5ac75 100644
+--- a/include/keymaster/contexts/keymaster0_passthrough_context.h
++++ b/include/keymaster/contexts/keymaster0_passthrough_context.h
+@@ -35,6 +35,24 @@ class Keymaster0PassthroughContext : public PureSoftKeymasterContext {
+         ec_factory_.reset(new EcdsaKeymaster0KeyFactory(this, km0_engine_.get()));
+     }
+ 
++  keymaster_error_t DeleteKey(const KeymasterKeyBlob&  blob) const override {
++    UniquePtr<Key> key;
++    AuthorizationSet params;
++    keymaster_error_t error = ParseKeyBlob(blob, params, &key);
++    if (error != KM_ERROR_OK) {
++      return error;
++    }
++    if(km0_engine_->DeleteKey(key->key_material())) {
++      return KM_ERROR_OK;
++    } else {
++      return KM_ERROR_UNKNOWN_ERROR;
++    }
++  }
++
++  keymaster_error_t DeleteAllKeys() const override {
++    return (km0_engine_->DeleteAllKeys() == 0) ? KM_ERROR_OK : KM_ERROR_UNKNOWN_ERROR;
++  }
++
+   private:
+     UniquePtr<Keymaster0Engine> km0_engine_;
+ };
+-- 
+2.25.1
+

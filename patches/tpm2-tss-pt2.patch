@@ -1,0 +1,39 @@
+From 6ba7879bbec21c537ad43d8063c3778a9639d0b6 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Tue, 16 Nov 2021 17:06:27 +0800
+Subject: [PATCH] integrate TPM into AOSP (part 2)
+
+---
+ Android.bp            | 2 +-
+ dist/fapi-config.json | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index 5e8b858e..fabce48b 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -31,7 +31,7 @@
+ 
+ cc_defaults {
+     name: "tpm2-tss-defaults",
+-    //vendor: true,
++    vendor: true,
+     //host_supported: true,
+     compile_multilib: "first",
+     cflags: [
+diff --git a/dist/fapi-config.json b/dist/fapi-config.json
+index bf1b671d..cbb6aeb0 100644
+--- a/dist/fapi-config.json
++++ b/dist/fapi-config.json
+@@ -3,7 +3,7 @@
+      "profile_dir": "/vendor/etc/tpm2-tss/fapi-profiles/",
+      "user_dir": "/data/tpm2-tss/user/keystore",
+      "system_dir": "/data/tpm2-tss/system/keystore",
+-     "tcti": "",
++     "tcti": "mssim:host=localhost,port=2321",
+      "system_pcrs" : [],
+      "log_dir" : "/data/tpm2-tss/eventlog/",
+      "ek_cert_less": "yes"
+-- 
+2.25.1
+

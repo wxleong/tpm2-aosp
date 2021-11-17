@@ -1,0 +1,428 @@
+From 2c569f7c610987ca0a27e4ca59c69836feccf1b7 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Mon, 15 Nov 2021 13:16:31 +0800
+Subject: [PATCH] integrate TPM into AOSP
+
+---
+ Android.bp               |  93 ++++++++++++++++++++++++++++++
+ src/lib/backend.c        |   5 +-
+ src/lib/backend_esysdb.c | 113 +++++++++++++++++++++++++++++++++++++
+ src/lib/backend_fapi.c   |   4 +-
+ src/lib/config.h         | 119 +++++++++++++++++++++++++++++++++++++++
+ src/lib/object.c         |   1 -
+ 6 files changed, 331 insertions(+), 4 deletions(-)
+ create mode 100644 Android.bp
+ create mode 100644 src/lib/config.h
+
+diff --git a/Android.bp b/Android.bp
+new file mode 100644
+index 0000000..060f2ac
+--- /dev/null
++++ b/Android.bp
+@@ -0,0 +1,93 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++/*package {
++    default_applicable_licenses: ["external_tpm2-tss_license"],
++}*/
++
++// Added automatically by a large-scale-change
++// See: http://go/android-license-faq
++/*license {
++    name: "external_tpm2-tss_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}*/
++
++cc_defaults {
++    name: "tpm2-pkcs11-defaults",
++    vendor: true,
++    //host_supported: true,
++    compile_multilib: "first",
++    cflags: [
++        "-Wno-typedef-redefinition", // to silence error "redefinition of typedef"
++        "-DHAVE_CONFIG_H",
++    ],
++    export_include_dirs: [
++        "src",
++    ],
++}
++
++cc_library {
++    name: "tpm2-pkcs11",
++    defaults: [ "tpm2-pkcs11-defaults" ],
++    srcs: [
++        "src/*.c",
++        "src/lib/attrs.c",
++        "src/lib/backend.c",
++        "src/lib/backend_esysdb.c",
++        "src/lib/backend_fapi.c",
++        //"src/lib/db.c",
++        "src/lib/digest.c",
++        "src/lib/emitter.c",
++        "src/lib/encrypt.c",
++        "src/lib/general.c",
++        "src/lib/key.c",
++        "src/lib/mech.c",
++        "src/lib/mutex.c",
++        "src/lib/object.c",
++        "src/lib/parser.c",
++        "src/lib/random.c",
++        "src/lib/session.c",
++        "src/lib/session_ctx.c",
++        "src/lib/session_table.c",
++        "src/lib/sign.c",
++        "src/lib/slot.c",
++        "src/lib/ssl_util.c",
++        "src/lib/token.c",
++        "src/lib/tpm.c",
++        "src/lib/twist.c",
++        "src/lib/typed_memory.c",
++        "src/lib/utils.c",
++    ],
++    local_include_dirs: [
++        "src/lib",
++    ],
++    shared_libs: [
++        "liblog",
++        "openssl-libcrypto",
++        "libyaml",
++        "tpm2-tss2-mu",
++        "tpm2-tss2-tcti",
++        "tpm2-tss2-sys",
++        "tpm2-tss2-esys",
++        "tpm2-tss2-util",
++        "tpm2-tss2-rc",
++        "tpm2-tss2-fapi",
++    ],
++}
+diff --git a/src/lib/backend.c b/src/lib/backend.c
+index 15d64d4..aea0ea6 100644
+--- a/src/lib/backend.c
++++ b/src/lib/backend.c
+@@ -12,7 +12,7 @@ enum backend {
+ };
+ 
+ static enum backend get_backend(void) {
+-
++#ifndef HAVE_FAPI
+     const char *env = getenv("TPM2_PKCS11_BACKEND");
+ 
+     if (!env || !strcasecmp(env, "esysdb")) {
+@@ -24,6 +24,9 @@ static enum backend get_backend(void) {
+     }
+ 
+     return backend_error;
++#else
++    return backend_fapi;
++#endif
+ }
+ 
+ /* This file includes the logic for selecting, aggregating and
+diff --git a/src/lib/backend_esysdb.c b/src/lib/backend_esysdb.c
+index f9b130b..b27c67d 100644
+--- a/src/lib/backend_esysdb.c
++++ b/src/lib/backend_esysdb.c
+@@ -2,6 +2,7 @@
+ 
+ #include "config.h"
+ #include "backend_esysdb.h"
++#ifndef HAVE_FAPI
+ #include "db.h"
+ #include "tpm.h"
+ 
+@@ -461,3 +462,115 @@ out:
+ 
+     return rv;
+ }
++#else
++
++CK_RV backend_esysdb_init(void) {
++
++    LOGV("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_destroy(void) {
++
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_ctx_new(token *t) {
++
++    UNUSED(t);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++void backend_esysdb_ctx_free(token *t) {
++
++    UNUSED(t);
++    LOGE("ESYSDB NOT ENABLED");
++}
++
++void backend_esysdb_ctx_reset(token *t){
++
++    UNUSED(t);
++    LOGV("ESYSDB NOT ENABLED");
++}
++
++CK_RV backend_esysdb_create_token_seal(token *t, const twist hexwrappingkey,
++                       const twist newauth, const twist newsalthex) {
++
++    UNUSED(t);
++    UNUSED(hexwrappingkey);
++    UNUSED(newauth);
++    UNUSED(newsalthex);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_get_tokens(token *tok, size_t *len) {
++
++    UNUSED(tok);
++    UNUSED(len);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_init_user(token *t, const twist sealdata,
++                        const twist newauthhex, const twist newsalthex) {
++    UNUSED(t);
++    UNUSED(sealdata);
++    UNUSED(newauthhex);
++    UNUSED(newsalthex);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_add_object(token *t, tobject *tobj) {
++
++    UNUSED(t);
++    UNUSED(tobj);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_update_token_config (token *tok) {
++
++    UNUSED(tok);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_update_tobject_attrs(tobject *tobj, attr_list *attrlist) {
++
++    UNUSED(tobj);
++    UNUSED(attrlist);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_rm_tobject(tobject *tobj) {
++
++    UNUSED(tobj);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_token_unseal_wrapping_key(token *tok, bool user, twist tpin) {
++
++    UNUSED(tok);
++    UNUSED(user);
++    UNUSED(tpin);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++CK_RV backend_esysdb_token_changeauth(token *tok, bool user, twist toldpin, twist tnewpin) {
++
++    UNUSED(tok);
++    UNUSED(user);
++    UNUSED(toldpin);
++    UNUSED(tnewpin);
++    LOGE("ESYSDB NOT ENABLED");
++    return CKR_GENERAL_ERROR;
++}
++
++#endif
+diff --git a/src/lib/backend_fapi.c b/src/lib/backend_fapi.c
+index 147747c..a8dd2e3 100644
+--- a/src/lib/backend_fapi.c
++++ b/src/lib/backend_fapi.c
+@@ -144,7 +144,7 @@ static char *tss_path_from_id(unsigned id, const char *type) {
+ }
+ 
+ static char *path_get_parent(const char *path) {
+-    char *end = rindex(path, '/');
++    char *end = strrchr(path, '/');
+     if (!end) {
+         return NULL;
+     }
+@@ -267,7 +267,7 @@ CK_RV backend_fapi_add_tokens(token *tok, size_t *len) {
+         /* Skip over potential profile nodes that don't interest us. */
+         char *subpath = path;
+         if (!strncmp(path, "/P_", strlen("/P_"))) {
+-            subpath = index(path + 1, '/');
++            subpath = strchr(path + 1, '/');
+             if (!subpath) {
+                 LOGE("Malformed path received");
+                 goto error;
+diff --git a/src/lib/config.h b/src/lib/config.h
+new file mode 100644
+index 0000000..05b2a9d
+--- /dev/null
++++ b/src/lib/config.h
+@@ -0,0 +1,119 @@
++/* src/lib/config.h.  Generated from config.h.in by configure.  */
++/* src/lib/config.h.in.  Generated from configure.ac by autoheader.  */
++
++/* Define if building universal (internal helper macro) */
++/* #undef AC_APPLE_UNIVERSAL_BUILD */
++
++/* Define to disable built in overflow math */
++/* #undef DISABLE_OVERFLOW_BUILTINS */
++
++/* ESAPI versions below 2.2.1 are known to require manual session flag
++   management. */
++/* #undef ESAPI_MANAGE_FLAGS */
++
++/* Esys3 */
++#define ESYS_3 1
++
++/* Defined when building fuzzing tests */
++/* #undef FUZZING */
++
++/* Define to 1 if you have the <dlfcn.h> header file. */
++#define HAVE_DLFCN_H 1
++
++/* Enabled if FAPI >= 3.0 is found */
++#define HAVE_FAPI 1
++
++/* Define to 1 if the system has the `weak' function attribute */
++/* #undef HAVE_FUNC_ATTRIBUTE_WEAK */
++
++/* Define to 1 if you have the <inttypes.h> header file. */
++#define HAVE_INTTYPES_H 1
++
++/* Define to 1 if you have the <memory.h> header file. */
++#define HAVE_MEMORY_H 1
++
++/* Define if you have POSIX threads libraries and header files. */
++#define HAVE_PTHREAD 1
++
++/* Have PTHREAD_PRIO_INHERIT. */
++#define HAVE_PTHREAD_PRIO_INHERIT 1
++
++/* Define to 1 if you have the <stdint.h> header file. */
++#define HAVE_STDINT_H 1
++
++/* Define to 1 if you have the <stdlib.h> header file. */
++#define HAVE_STDLIB_H 1
++
++/* Define to 1 if you have the <strings.h> header file. */
++#define HAVE_STRINGS_H 1
++
++/* Define to 1 if you have the <string.h> header file. */
++#define HAVE_STRING_H 1
++
++/* Define to 1 if you have the <sys/stat.h> header file. */
++#define HAVE_SYS_STAT_H 1
++
++/* Define to 1 if you have the <sys/types.h> header file. */
++#define HAVE_SYS_TYPES_H 1
++
++/* Define to 1 if you have the <unistd.h> header file. */
++#define HAVE_UNISTD_H 1
++
++/* Define to the sub-directory where libtool stores uninstalled libraries. */
++#define LT_OBJDIR ".libs/"
++
++/* Define if debugging is disabled */
++/* #define NDEBUG */ // directly inserted in command line by aosp build
++
++/* Name of package */
++#define PACKAGE "tpm2-pkcs11"
++
++/* Define to the address where bug reports for this package should be sent. */
++#define PACKAGE_BUGREPORT "https://github.com/tpm2-software/tpm2-pkcs11/issues"
++
++/* Define to the full name of this package. */
++#define PACKAGE_NAME "tpm2-pkcs11"
++
++/* Define to the full name and version of this package. */
++#define PACKAGE_STRING "tpm2-pkcs11 1.6.0"
++
++/* Define to the one symbol short name of this package. */
++#define PACKAGE_TARNAME "tpm2-pkcs11"
++
++/* Define to the home page for this package. */
++#define PACKAGE_URL "https://github.com/tpm2-software/tpm2-pkcs11"
++
++/* Define to the version of this package. */
++#define PACKAGE_VERSION "1.6.0"
++
++/* Define to enable 1 byte structure packing. Default for Windows builds. */
++/* #undef PKCS11_PACK */
++
++/* Define to necessary symbol if this constant uses a non-standard name on
++   your system. */
++/* #undef PTHREAD_CREATE_JOINABLE */
++
++/* Define to 1 if you have the ANSI C header files. */
++#define STDC_HEADERS 1
++
++/* Changes the store directory to search. Defaults to /etc/tpm2_pkcs11 */
++/* #undef TPM2_PKCS11_STORE_DIR */
++
++/* Define when unit testing. libtwist uses this to define a debug interface
++   for alloc failures */
++/* #undef UNIT_TESTING */
++
++/* Version number of package */
++#define VERSION "1.6.0"
++
++/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
++   significant byte first (like Motorola and SPARC, unlike Intel). */
++#if defined AC_APPLE_UNIVERSAL_BUILD
++# if defined __BIG_ENDIAN__
++#  define WORDS_BIGENDIAN 1
++# endif
++#else
++# ifndef WORDS_BIGENDIAN
++/* #  undef WORDS_BIGENDIAN */
++# endif
++#endif
+diff --git a/src/lib/object.c b/src/lib/object.c
+index 7fa7f11..0dcf03f 100644
+--- a/src/lib/object.c
++++ b/src/lib/object.c
+@@ -9,7 +9,6 @@
+ #include "attrs.h"
+ #include "backend.h"
+ #include "checks.h"
+-#include "db.h"
+ #include "emitter.h"
+ #include "log.h"
+ #include "object.h"
+-- 
+2.25.1
+

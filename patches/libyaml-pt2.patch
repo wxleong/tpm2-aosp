@@ -1,0 +1,25 @@
+From c027f4fc4a5ba92fde04fdfbf99f49807d9b8aa6 Mon Sep 17 00:00:00 2001
+From: "wenxin.leong" <wenxin.leong@infineon.com>
+Date: Tue, 16 Nov 2021 17:03:11 +0800
+Subject: [PATCH] integrate TPM into AOSP (part 2)
+
+---
+ Android.bp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Android.bp b/Android.bp
+index 05fc322..340371b 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -31,7 +31,7 @@
+ 
+ cc_defaults {
+     name: "libyaml-defaults",
+-    //vendor: true,
++    vendor: true,
+     //host_supported: true,
+     compile_multilib: "first",
+     cflags: [
+-- 
+2.25.1
+
