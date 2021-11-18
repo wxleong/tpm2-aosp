@@ -30,13 +30,24 @@ Access TPM via:
   - **[5.2 OpenSC](#52-opensc)**
   - **[5.3 TPM Keymaster](#53-tpm-keymaster)**
   - **[5.4 Other Modifications](#54-other-modifications)**
-- **[6. Access TPM via Android KeyStore (Keymaster Hardware Abstraction Layers)](#6-access-tpm-via-android-keystore-keymaster-hardware-abstraction-layers)**
+- **[6. Access TPM via Android KeyStore (Keymaster Hardware Abstraction Layers)](#6-access-tpm-via-keystore-keymaster-hardware-abstraction-layers)**
 - **[7. References](#7-references)**
 - **[License](#license)**
 
 # 1. Prerequisites
 
-- Tested on Ubuntu 20.04.3 LTS x86_64
+- Tested on: 
+  ```
+  $ lsb_release -a
+  No LSB modules are available.
+  Distributor ID:	Ubuntu
+  Description:	Ubuntu 20.04.3 LTS
+  Release:	20.04
+  Codename:	focal
+
+  $ uname -a
+  Linux ubuntu 5.11.0-40-generic #44~20.04.2-Ubuntu SMP Tue Oct 26 18:07:44 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+  ```
 - Find the hardware requirements at \[[1]\]
 
 # 2. Setup AOSP
@@ -47,12 +58,15 @@ This section is a summary of \[[2]\], \[[3]\], and \[[4]\].
 
 Install required packages:
 ```
+$ sudo apt-get update
 $ sudo apt-get install git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig
 ```
 
-Install additional packages:
+Install Git:
 ```
 $ sudo apt-get install git
+$ git config --global user.email "you@example.com"
+$ git config --global user.name "Your Name"
 ```
 
 Download this repository:
@@ -67,12 +81,17 @@ $ curl -o ${REPO} https://storage.googleapis.com/git-repo-downloads/repo
 $ sudo install -m 755 ${REPO} /usr/bin/repo
 ```
 
-<!-- **! CHECK IF THIS COMMAND OK "update-alternatives --install /usr/bin/python python /usr/bin/python3 1" ref: https://unix.stackexchange.com/questions/410579/change-the-python3-default-version-in-ubuntu/410851** -->
-
 Set Python3 as default:
 ```
 $ sudo mv /usr/bin/python /usr/bin/python.bkup
-$ sudo ln -s /usr/bin/python3.6 /usr/bin/python
+$ sudo ln -s /usr/bin/python3.8 /usr/bin/python
+$ python --version
+Python 3.8.5
+```
+
+Reboot your system:
+```
+$ sudo reboot
 ```
 
 Check if repo is installed correctly:
