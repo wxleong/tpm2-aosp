@@ -1,6 +1,6 @@
 # Introduction
 
-Trusted Platform Module 2.0 (TPM) integrate guide for Android Open Source Project (AOSP).
+Integration of OPTIGA™ TPM 2.0 into Android Open Source Project (AOSP).
 
 Access TPM via:
 1. JNI Framework<br>Software flow: Android application (IFXAppNative) -> OpenSSL -> Engine (tpm2-tss-engine) -> TSS (tpm2-tss) -> TPM2.0 simulator (ms-tpm-20-ref)
