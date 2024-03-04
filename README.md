@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This repository is deprecated and will no longer be maintained. It has been replaced by https://github.com/wxleong/tpm2-aosp2.
+
 # Introduction
 
 Integration of OPTIGA™ TPM 2.0 into Android Open Source Project (AOSP).
